@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">账号登录</h3>
+        <h3 class="title">Login Form</h3>
       </div>
 
       <el-form-item prop="username">
@@ -45,50 +45,29 @@
         </el-form-item>
       </el-tooltip>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
     </el-form>
-
-    <el-dialog title="Or connect with" :visible.sync="showDialog">
-      Can not be simulated on local, so please combine you own business simulation! ! !
-      <br>
-      <br>
-      <br>
-      <social-sign />
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-import SocialSign from './components/SocialSignin'
-
+// import { validUsername } from '@/utils/validate'
+// import SocialSign from './components/SocialSignin'
+import messageBox from '@/utils/messageBox'
+import User from '@/api/user'
+import { mapGetters } from 'vuex'
+import 'jsencrypt'
 export default {
   name: 'Login',
-  components: { SocialSign },
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
         username: '',
         password: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        username: [{ required: true, trigger: 'blur' }],
+        password: [{ required: true, trigger: 'blur' }]
       },
       passwordType: 'password',
       capsTooltip: false,
@@ -97,6 +76,9 @@ export default {
       redirect: undefined,
       otherQuery: {}
     }
+  },
+  computed: {
+    ...mapGetters(['publicKey'])
   },
   watch: {
     $route: {
@@ -111,6 +93,7 @@ export default {
     }
   },
   created() {
+    this.getPublicKey()
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
@@ -124,6 +107,9 @@ export default {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
+    getPublicKey() {
+      this.$store.dispatch('user/publicKey')
+    },
     checkCapslock(e) {
       const { key } = e
       this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
@@ -141,18 +127,31 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.loading = false
-            })
-            .catch(() => {
-              this.loading = false
-            })
-        } else {
-          console.log('error submit!!')
-          return false
+          // 创建加密实例
+          const encrypt = new JSEncrypt()
+          // 初始化公钥
+          encrypt.setPublicKey(this.publicKey)
+          // 加密数据
+          const password = encrypt.encrypt(this.loginForm.password)
+          console.log(password)
+          const query = {
+            accountName: this.loginForm.username,
+            password
+          }
+          User.login(query).then(res => {
+            if (res.statusCode == '00000') {
+              this.$router.push({
+                path: this.redirect || '/index/dashboard',
+                query: this.otherQuery
+              })
+              // 存储登陆者的id
+              localStorage.setItem('accountId', res.data.accountId)
+              // 存储是不是管理员
+              localStorage.setItem('robustAccountType', res.data.robustAccountType)
+            } else {
+              messageBox.messageBox(this, 'warning', res.errorMessage)
+            }
+          })
         }
       })
     },
@@ -188,7 +187,6 @@ $cursor: #fff;
     display: inline-block;
     height: 47px;
     width: 85%;
-
     input {
       background: transparent;
       border: 0px;
@@ -207,8 +205,8 @@ $cursor: #fff;
   }
 
   .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 5px;
     color: #454545;
   }
@@ -216,25 +214,28 @@ $cursor: #fff;
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: RGB(45, 58, 75, 0.8);
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
   min-height: 100%;
   width: 100%;
-  background: url("./../../assets/index/background.jpeg") no-repeat center;
-  background-size: cover;
+  // background-color: $bg;
   overflow: hidden;
-
+  background: url('./../../assets/index/background.jpeg') no-repeat center;
+  background-size: cover;
 
   .login-form {
     position: relative;
     width: 520px;
     max-width: 100%;
-    padding: 160px 35px 0;
+    padding: 15px 35px 0;
     margin: 0 auto;
+    margin-top: 160px;
     overflow: hidden;
+    background-color: $bg;
+    border-radius: 4px;
   }
 
   .tips {

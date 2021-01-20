@@ -7,7 +7,8 @@
     "dev": "vue-cli-service serve",
     "lint": "eslint --ext .js,.vue src",
     "build:prod": "vue-cli-service build",
-    "build:stage": "vue-cli-service build --mode staging",
+    "build:staging": "vue-cli-service build --mode staging",
+    "build:test": "vue-cli-service build --mode test",
     "preview": "node build/index.js --preview",
     "new": "plop",
     "svgo": "svgo -f src/icons/svg --config=src/icons/svgo.yml",
@@ -26,6 +27,8 @@
     "file-saver": "2.0.1",
     "fuse.js": "3.4.4",
     "js-cookie": "2.2.0",
+    "js-file-download": "^0.4.12",
+    "jsencrypt": "^3.0.0-rc.1",
     "jsonlint": "1.6.3",
     "jszip": "3.2.1",
     "normalize.css": "7.0.0",
@@ -51,7 +54,7 @@
     "@vue/test-utils": "1.0.0-beta.29",
     "autoprefixer": "9.5.1",
     "babel-eslint": "10.1.0",
-    "babel-jest": "23.6.0",
+    "babel-jest": "^26.6.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "chalk": "2.4.2",
     "chokidar": "2.1.5",
@@ -98,14 +101,5 @@
       "eslint --fix",
       "git add"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PanJiaChen/vue-element-admin.git"
   }
 }

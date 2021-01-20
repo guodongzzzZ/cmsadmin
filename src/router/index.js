@@ -5,7 +5,6 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -39,7 +38,7 @@ export const constantRoutes = [
     hidden: true,
     children: [
       {
-        path: '/redirect/:path(.*)',
+        path: '/redirect/:path*',
         component: () => import('@/views/redirect/index')
       }
     ]
@@ -47,7 +46,8 @@ export const constantRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login/index'),
-    hidden: true
+    hidden: true,
+    name: 'login'
   },
   {
     path: '/auth-redirect',
@@ -65,28 +65,65 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '/',
+    path: '/index',
     component: Layout,
     redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
-        component: () => import('@/views/dashboard/index'),
+        component: () => import('@/views/documentation/index'),
         name: 'Dashboard',
         meta: { title: '首页', icon: 'dashboard', affix: true }
       }
     ]
-  }
+  },
+  {
+    path: '/error',
+    component: Layout,
+    redirect: 'noRedirect',
+    name: 'ErrorPages',
+    meta: {
+      title: 'Error Pages',
+      icon: '404'
+    },
+    hidden: true,
+    children: [
+      {
+        path: '401',
+        component: () => import('@/views/error-page/401'),
+        name: 'Page401',
+        meta: { title: '401', noCache: true }
+      },
+      {
+        path: '404',
+        component: () => import('@/views/error-page/404'),
+        name: 'Page404',
+        meta: { title: '404', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/error-log',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'log',
+        component: () => import('@/views/error-log/index'),
+        name: 'ErrorLog',
+        meta: { title: 'Error Log', icon: 'bug' }
+      }
+    ]
+  },
+  // 404 page must be placed at the end !!!
+  { path: '*', redirect: '/login', hidden: true }
 ]
 
 /**
  * asyncRoutes
  * the routes that need to be dynamically loaded based on user roles
  */
-export const asyncRoutes = [
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
-]
+export const asyncRoutes = []
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support

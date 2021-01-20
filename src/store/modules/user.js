@@ -1,13 +1,15 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getInfo, publicKey } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
+// import { resolve, reject } from 'core-js/fn/promise'
 
 const state = {
   token: getToken(),
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  publicKey: ''
 }
 
 const mutations = {
@@ -25,19 +27,31 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_PUBLIC_KEY: (state, publicKey) => {
+    state.publicKey = publicKey
   }
 }
 
 const actions = {
+  // 获取publicKey
+  publicKey({ commit }) {
+    return new Promise((resolve, reject) => {
+      publicKey().then(response => {
+        commit('SET_PUBLIC_KEY', response.publicKey)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
   // user login
   login({ commit }, userInfo) {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
+      login({ userName: username.trim(), password: password }).then(response => {
+        console.log(response)
+        resolve(response)
       }).catch(error => {
         reject(error)
       })
